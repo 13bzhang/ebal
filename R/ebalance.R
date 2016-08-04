@@ -1,8 +1,9 @@
-ebalance <-
+ ebalance <-
 function(
               Treatment,
               X,
               base.weight = NULL,
+              treatment.weight = NULL,
               norm.constant  = NULL,
               coefs = NULL ,
               max.iterations = 200,
@@ -50,6 +51,13 @@ ncontrols <- sum(Treatment==0)
         stop("length(base.weight) !=  number of controls  sum(Treatment==0)")
     }
 
+if (is.null(treatment.weight)) {
+  base.weight = rep(1, ntreated)
+}
+if ( length(treatment.weight) !=  ntreated) {
+  stop("length(treatment.weight) !=  number of controls  sum(Treatment==1)")
+}
+
 co.x <- X[Treatment==0,]
 co.x <- cbind(rep(1,ncontrols),co.x)
 
@@ -58,7 +66,7 @@ co.x <- cbind(rep(1,ncontrols),co.x)
     }
 
 
-tr.total <- apply(as.matrix(X[Treatment==1,]),2,sum)
+tr.total <- apply(as.matrix(X[Treatment==1,]) * treatment.weight,2,sum)
 
     if (is.null(norm.constant)) {
         norm.constant <- ntreated
@@ -101,6 +109,7 @@ z <- list(
           constraint.tolerance=constraint.tolerance,
           max.iterations=max.iterations,
           base.weight=base.weight,
+          treatment.weight = treatment.weight,
           print.level=print.level,
           converged=eb.out$converged
     )
